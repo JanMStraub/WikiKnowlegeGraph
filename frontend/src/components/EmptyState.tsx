@@ -27,7 +27,7 @@ export default function EmptyState({ onQuickStart }: EmptyStateProps) {
     <div className="empty-state">
       <div className="empty-state-content">
         <div className="logo">🌐</div>
-        <h2>Welcome to WikiGraph Pro</h2>
+        <h2>Welcome to WikiGraph</h2>
         <p>
           Visualize connections between Wikipedia entities and explore knowledge graphs
           interactively.

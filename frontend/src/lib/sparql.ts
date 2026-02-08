@@ -13,7 +13,7 @@ import {
 
 const SPARQL_ENDPOINT = 'https://query.wikidata.org/sparql'
 const SPARQL_RESULT_LIMIT = 2000
-const USER_AGENT = 'WikiGraph-Pro/2.0 (browser; github-pages)'
+const USER_AGENT = 'WikiGraph/2.0 (browser; github-pages)'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 

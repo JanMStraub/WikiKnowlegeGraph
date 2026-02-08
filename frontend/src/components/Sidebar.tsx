@@ -138,7 +138,7 @@ export default function Sidebar({ graphState, isDark, onToggleTheme }: SidebarPr
   return (
     <aside className="sidebar">
       <header className="sidebar-header">
-        <h1>WikiGraph Pro</h1>
+        <h1>WikiGraph</h1>
         <button
           onClick={onToggleTheme}
           className="theme-toggle"

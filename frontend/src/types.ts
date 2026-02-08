@@ -1,5 +1,5 @@
 /**
- * Type definitions for WikiGraph Pro
+ * Type definitions for WikiGraph
  */
 
 export interface GraphNode {
