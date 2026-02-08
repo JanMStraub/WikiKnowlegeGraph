@@ -1,0 +1,32 @@
+/**
+ * Main application layout styles
+ */
+
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-bg-secondary);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+  .app {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    width: 100vw;
+  }
+}
