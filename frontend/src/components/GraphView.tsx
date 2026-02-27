@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import type { useGraphState } from '../hooks/useGraphState';
-import type { GraphEdge, GraphNode } from '../types';
 import { findAllPairPaths } from '../lib/shortestPath';
 import EmptyState from './EmptyState';
 import ExportMenu from './ExportMenu';
@@ -92,7 +91,7 @@ export default function GraphView({ graphState }: GraphViewProps) {
             if (graphState.isPhysicsEnabled) {
                 fg.d3ReheatSimulation();
             } else {
-                fg.d3AlphaTarget(0);
+                (fg as any).d3AlphaTarget(0); // Bypass outdated DefinitelyTyped bindings
                 // Cool down immediately
                 setTimeout(() => {
                     fg.pauseAnimation();
