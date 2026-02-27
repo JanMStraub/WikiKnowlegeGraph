@@ -87,18 +87,10 @@ export default function GraphView({ graphState }: GraphViewProps) {
     // Handle Physics Enable/Disable
     useEffect(() => {
         const fg = fgRef.current;
-        if (fg) {
-            if (graphState.isPhysicsEnabled) {
-                fg.d3ReheatSimulation();
-            } else {
-                (fg as any).d3AlphaTarget(0); // Bypass outdated DefinitelyTyped bindings
-                // Cool down immediately
-                setTimeout(() => {
-                    fg.pauseAnimation();
-                    fg.resumeAnimation(); // Render static
-                }, 0);
-            }
+        if (fg && graphState.isPhysicsEnabled) {
+            fg.d3ReheatSimulation();
         }
+        // When disabled, the props `cooldownTicks={0}` and `d3AlphaDecay={1}` handle freezing safely.
     }, [graphState.isPhysicsEnabled, graphData]);
 
 
@@ -159,6 +151,8 @@ export default function GraphView({ graphState }: GraphViewProps) {
     }, []);
 
     const drawNode = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+        if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
         const isFocused = graphState.selectedNode?.id === node.id;
         const isHovered = hoverNode === node.id;
         const isInitial = node.isInitialEntity;
@@ -240,6 +234,11 @@ export default function GraphView({ graphState }: GraphViewProps) {
     }, [graphState.selectedNode, graphState.selectedEdge, graphState.isPathMode, pathNodeIds, connectedNodes, hoverNode, getNodeImage]);
 
     const drawLink = useCallback((link: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+        const src = link.source;
+        const tgt = link.target;
+        if (typeof src !== 'object' || typeof tgt !== 'object') return;
+        if (typeof src.x !== 'number' || typeof tgt.x !== 'number') return;
+
         let isHighlighted = false;
         let isDimmed = false;
 
@@ -251,10 +250,7 @@ export default function GraphView({ graphState }: GraphViewProps) {
             }
         } else if (graphState.selectedNode) {
             // Highlight links connected to selected node
-            const linkSrcId = typeof link.source === 'object' ? link.source.id : link.source;
-            const linkTgtId = typeof link.target === 'object' ? link.target.id : link.target;
-
-            if (linkSrcId === graphState.selectedNode.id || linkTgtId === graphState.selectedNode.id) {
+            if (src.id === graphState.selectedNode.id || tgt.id === graphState.selectedNode.id) {
                 isHighlighted = true;
             } else {
                 isDimmed = true;
@@ -267,22 +263,13 @@ export default function GraphView({ graphState }: GraphViewProps) {
             }
         }
 
-        // Width
-        ctx.lineWidth = isHighlighted ? 2.5 : 0.3;
-        if (globalScale > 2.0 && !isDimmed) ctx.lineWidth = Math.max(ctx.lineWidth, 1.0);
-
-        // Color
-        ctx.strokeStyle = isHighlighted ? '#2563eb' : 'rgba(150,150,150,0.25)';
-        if (graphState.isPathMode && isHighlighted) ctx.strokeStyle = '#f59e0b'; // Amber for paths
-        if (isDimmed) ctx.strokeStyle = 'rgba(180,180,180,0.05)';
-
         // Label on edge if highly zoomed or highlighted
         const showEdgeLabel = isHighlighted || globalScale > 3.0;
 
-        if (showEdgeLabel && !isDimmed && link.source.x && link.target.x) {
+        if (showEdgeLabel && !isDimmed) {
             // Calculate mid point
-            const midX = (link.source.x + link.target.x) / 2;
-            const midY = (link.source.y + link.target.y) / 2;
+            const midX = (src.x + tgt.x) / 2;
+            const midY = (src.y + tgt.y) / 2;
 
             ctx.font = "8px Inter, sans-serif";
             ctx.textAlign = 'center';
@@ -422,7 +409,6 @@ export default function GraphView({ graphState }: GraphViewProps) {
                             nodeCanvasObject={drawNode}
                             nodeRelSize={1}
 
-                            linkWidth={1}
                             linkDirectionalArrowLength={3.5}
                             linkDirectionalArrowRelPos={1}
                             linkCurvature={graphState.edgeBundling * 0.5} // react-force-graph uses linkCurvature instead of cubicBeziers
@@ -432,7 +418,30 @@ export default function GraphView({ graphState }: GraphViewProps) {
                             onBackgroundClick={handleBackgroundClick}
                             onNodeHover={(node: any) => setHoverNode(node ? node.id : null)}
 
-                            // Custom Link Drawing overrides standard drawing entirely to allow manual width/colors based on selection
+                            // Let ForceGraph natively draw the curved edges
+                            linkColor={(link: any) => {
+                                if (graphState.isPathMode) return pathEdgeIds.has(link.id) ? '#f59e0b' : 'rgba(180,180,180,0.05)';
+                                if (graphState.selectedEdge && graphState.selectedEdge.id === link.id) return '#2563eb';
+                                if (graphState.selectedNode) {
+                                    const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+                                    const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+                                    return (srcId === graphState.selectedNode.id || tgtId === graphState.selectedNode.id) ? '#2563eb' : 'rgba(180,180,180,0.05)';
+                                }
+                                return 'rgba(150,150,150,0.25)';
+                            }}
+                            linkWidth={(link: any) => {
+                                if (graphState.isPathMode) return pathEdgeIds.has(link.id) ? 2.5 : 0.3;
+                                if (graphState.selectedEdge && graphState.selectedEdge.id === link.id) return 2.5;
+                                if (graphState.selectedNode) {
+                                    const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+                                    const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+                                    return (srcId === graphState.selectedNode.id || tgtId === graphState.selectedNode.id) ? 2.5 : 0.3;
+                                }
+                                return 1;
+                            }}
+
+                            // Paint custom text labels ON TOP of the native curved lines
+                            linkCanvasObjectMode={() => 'after'}
                             linkCanvasObject={drawLink}
 
                             // Force Engine Params
