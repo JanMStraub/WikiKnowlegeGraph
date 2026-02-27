@@ -2,21 +2,27 @@
  * Export menu for graph export functionality
  */
 
-import { useState } from 'react'
-import type { Network } from 'vis-network/standalone'
+import { useState, RefObject } from 'react'
+import type { ForceGraphMethods } from 'react-force-graph-2d'
+import type { GraphData } from '../types'
 import './ExportMenu.css'
 
 interface ExportMenuProps {
-  network: Network
+  fgRef: RefObject<ForceGraphMethods>
+  graphData: GraphData
 }
 
-export default function ExportMenu({ network }: ExportMenuProps) {
+export default function ExportMenu({ fgRef, graphData }: ExportMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const exportPNG = () => {
     try {
-      // Get canvas from vis-network
-      const canvas = (network as any).canvas.frame.canvas as HTMLCanvasElement
+      if (!fgRef.current) return;
+
+      // react-force-graph exposes the internal canvas ctx via a method hack or we can grab the canvas element
+      // For rfg-2d, the DOM structure is usually string predictability
+      const canvas = document.querySelector('.graph-view canvas') as HTMLCanvasElement;
+      if (!canvas) throw new Error("Canvas not found");
 
       // Convert to data URL
       const dataURL = canvas.toDataURL('image/png')
@@ -36,12 +42,12 @@ export default function ExportMenu({ network }: ExportMenuProps) {
 
   const exportJSON = () => {
     try {
-      // Get data from network
+      // Get raw data from passed prop since FG doesn't expose internal structured data getters easily like Vis
       const data = {
-        nodes: (network as any).body.data.nodes.get(),
-        edges: (network as any).body.data.edges.get(),
+        nodes: graphData.nodes,
+        edges: graphData.edges,
         exported: new Date().toISOString(),
-        version: '2.0',
+        version: '2.0-webgl',
       }
 
       // Create blob

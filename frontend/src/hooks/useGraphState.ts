@@ -87,6 +87,11 @@ export function useGraphState() {
   const [selectedEdge, setSelectedEdge] = useState<SelectedEdgeInfo | null>(null)
   const [isPathMode, setIsPathMode] = useState(false)
   const [highlightedPaths, setHighlightedPaths] = useState<Array<{ nodeIds: string[]; edgeIds: string[] }>>([])
+  const [isPhysicsEnabled, setIsPhysicsEnabled] = useState(false)
+
+  const togglePhysics = useCallback(() => {
+    setIsPhysicsEnabled((prev) => !prev)
+  }, [])
 
   const setFilters = useCallback((newFilters: AppState['filters']) => {
     setFiltersState(newFilters)
@@ -177,6 +182,7 @@ export function useGraphState() {
     edgeCategoryFilters,
     isPathMode,
     highlightedPaths,
+    isPhysicsEnabled,
 
     // Setters
     setNodes,
@@ -193,6 +199,7 @@ export function useGraphState() {
     setEdgeCategoryFilters,
     setIsPathMode,
     setHighlightedPaths,
+    setIsPhysicsEnabled,
 
     // Actions
     toggleFilter,
@@ -201,5 +208,6 @@ export function useGraphState() {
     addNodes,
     addEdges,
     removeNode,
+    togglePhysics,
   }
 }

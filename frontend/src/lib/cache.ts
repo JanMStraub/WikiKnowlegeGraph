@@ -3,7 +3,7 @@
  */
 
 const QID_CACHE_PREFIX = 'wg_qid_'
-const CONN_CACHE_PREFIX = 'wg_conn_'
+const CONN_CACHE_PREFIX = 'wg_conn_v2_'
 const QID_TTL = 24 * 60 * 60 * 1000 // 24 hours
 const CONN_TTL = 60 * 60 * 1000 // 1 hour
 

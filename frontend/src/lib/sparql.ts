@@ -131,8 +131,8 @@ export async function fetchBatchConnections(qids: string[]): Promise<ConnectionD
       }
       BIND(STRAFTER(STR(?type), "http://www.wikidata.org/entity/") AS ?typeQID)
 
-      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       ?prop wikibase:directClaim ?p.
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
     }
     GROUP BY ?source ?propLabel ?target ?targetLabel ?isHuman ?typeQID
     LIMIT ${SPARQL_RESULT_LIMIT}

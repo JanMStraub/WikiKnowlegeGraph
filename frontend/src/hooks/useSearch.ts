@@ -42,6 +42,7 @@ export function useSearch(options: UseSearchOptions = {}) {
 
       // Create new abort controller for this request
       abortController.current = new AbortController()
+      const currentRequestController = abortController.current
 
       try {
         const data = await searchEntities(searchQuery)
@@ -55,7 +56,9 @@ export function useSearch(options: UseSearchOptions = {}) {
         setError(err instanceof Error ? err.message : 'Search failed')
         setResults([])
       } finally {
-        setIsSearching(false)
+        if (abortController.current === currentRequestController) {
+          setIsSearching(false)
+        }
       }
     },
     [minChars]

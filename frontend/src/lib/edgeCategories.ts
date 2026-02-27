@@ -49,6 +49,7 @@ const EDGE_CATEGORY_MAP: Record<string, EdgeCategory> = {
   'country of citizenship': 'geographic',
   'place of birth': 'geographic',
   'place of death': 'geographic',
+  'place of burial': 'geographic',
   'residence': 'geographic',
   'headquarters location': 'geographic',
   'located in': 'geographic',
@@ -59,16 +60,29 @@ const EDGE_CATEGORY_MAP: Record<string, EdgeCategory> = {
   'territory claimed by': 'geographic',
   'capital of': 'geographic',
   'country of origin': 'geographic',
+  'shares border with': 'geographic',
+  'located on terrain feature': 'geographic',
 
-  // Membership
+  // Membership & Taxonomy
   'member of': 'membership',
   'member of political party': 'membership',
   'member of sports team': 'membership',
   'part of': 'membership',
+  'has part': 'membership',
+  'facet of': 'membership',
+  'subclass of': 'membership',
+  'instance of': 'membership',
   'affiliation': 'membership',
   'religious order': 'membership',
+  'religion or worldview': 'membership',
   'political party': 'membership',
   'allegiance': 'membership',
+  'founded by': 'career',
+  'discoverer or inventor': 'career',
+  'developer': 'career',
+  'creator': 'career',
+  'author': 'career',
+  'director': 'career',
 }
 
 export function categorizeEdge(label: string): EdgeCategory {

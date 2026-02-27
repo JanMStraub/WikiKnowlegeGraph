@@ -2,10 +2,11 @@
  * Main application component
  */
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useGraphState } from './hooks/useGraphState'
 import { useDarkMode } from './hooks/useDarkMode'
 import { fetchBatchConnections } from './lib/sparql'
+import { generateMap } from './api'
 import { categorizeEdge } from './lib/edgeCategories'
 import Sidebar from './components/Sidebar'
 import GraphView from './components/GraphView'
@@ -21,20 +22,51 @@ const PLACEHOLDER_IMG =
 function App() {
   const graphState = useGraphState()
   const { theme, toggleTheme } = useDarkMode()
+  const lastLoadedHash = useRef<string | null>(null)
 
   // URL hash synchronization
   useEffect(() => {
     const handleHashChange = () => {
       try {
         const hash = window.location.hash.slice(1)
-        if (hash) {
+        if (hash && hash !== lastLoadedHash.current) {
+          lastLoadedHash.current = hash
           const params = new URLSearchParams(hash)
-          const entities = params.get('entities')
-          const depth = params.get('depth')
+          const entitiesStr = params.get('entities')
+          const depthStr = params.get('depth')
 
-          if (entities && depth) {
-            // TODO: Auto-populate and generate from URL params
-            console.log('Load from URL:', { entities, depth })
+          if (entitiesStr && depthStr) {
+            const depth = parseInt(depthStr, 10) || 1
+            const entityList = entitiesStr.split(',').map(e => e.trim()).filter(Boolean)
+
+            if (entityList.length > 0) {
+              const qids = entityList.filter(e => /^Q\d+$/.test(e))
+              const names = entityList.filter(e => !(/^Q\d+$/.test(e)))
+
+              graphState.setIsLoading(true)
+              graphState.setDepth(depth)
+              graphState.setProgressMessage('Loading graph from URL...')
+              graphState.setError(null)
+
+              generateMap(
+                {
+                  names: names.length > 0 ? names : undefined,
+                  qids: qids.length > 0 ? qids : undefined,
+                  depth,
+                },
+                false,
+                (msg) => graphState.setProgressMessage(msg)
+              ).then((data) => {
+                graphState.setNodes(data.nodes)
+                graphState.setEdges(data.edges)
+              }).catch((err) => {
+                console.error('URL load error:', err)
+                graphState.setError(err instanceof Error ? err.message : 'Failed to load graph from URL')
+              }).finally(() => {
+                graphState.setIsLoading(false)
+                setTimeout(() => graphState.setProgressMessage(null), 2000)
+              })
+            }
           }
         }
       } catch (e) {
@@ -57,7 +89,13 @@ function App() {
         graphState.setSelectedNode(null)
         graphState.setSelectedEdge(null)
       }
-      // F: Toggle freeze (TODO: implement in GraphView)
+      // F: Toggle freeze
+      if (e.key === 'f' || e.key === 'F') {
+        // Prevent triggering when typing in inputs
+        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          graphState.togglePhysics()
+        }
+      }
       // Delete: Remove selected node
       if (e.key === 'Delete' && graphState.selectedNode) {
         graphState.removeNode(graphState.selectedNode.id)

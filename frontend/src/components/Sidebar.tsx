@@ -217,9 +217,9 @@ export default function Sidebar({ graphState, isDark, onToggleTheme }: SidebarPr
 
         <section className="bundling-section">
           <label htmlFor="bundling-slider">
-            Edge Bundling: {Math.round(graphState.edgeBundling * 100)}%
-            {graphState.edgeBundling === 0 && <span className="hint-text"> (No bundling)</span>}
-            {graphState.edgeBundling === 1 && <span className="hint-text"> (Maximum)</span>}
+            Link Curvature: {Math.round(graphState.edgeBundling * 100)}%
+            {graphState.edgeBundling === 0 && <span className="hint-text"> (Straight lines)</span>}
+            {graphState.edgeBundling === 1 && <span className="hint-text"> (Maximum curve)</span>}
           </label>
           <input
             id="bundling-slider"
@@ -231,12 +231,12 @@ export default function Sidebar({ graphState, isDark, onToggleTheme }: SidebarPr
             onChange={(e) => graphState.setEdgeBundling(Number(e.target.value))}
           />
           <div className="bundling-labels">
-            <span>None</span>
+            <span>Straight</span>
             <span>Moderate</span>
             <span>Maximum</span>
           </div>
           <p className="bundling-description">
-            Bundling groups similar edges together to reduce visual clutter in dense graphs.
+            Curved links help differentiate parallel connections.
           </p>
         </section>
 
